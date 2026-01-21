@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npx create-next-app@latest:*)",
       "Bash(npm init:*)",
-      "Bash(./node_modules/.bin/tailwindcss:*)"
+      "Bash(./node_modules/.bin/tailwindcss:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit: Quiz Timer with music playback\n\n- Next.js 16 app with TypeScript and Tailwind CSS 4\n- Timer with 8 time options \\(10s to 5min\\)\n- Large circular start/stop button with smooth animations\n- Background music playlist that continues from pause\n- Modern gradient UI with glass morphism effects\n- Mobile-friendly responsive design\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ],
     "additionalDirectories": [
       "/Users/dude/Projects/quiztimer"

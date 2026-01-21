@@ -15,11 +15,11 @@ const TIME_OPTIONS = [
 
 const MUSIC_FILES = [
   '/Если мир — это игра, то где кнопка выход.mp3',
-  '/Если мир — это игра, то где кнопка выход (1).mp3',
   '/Мне врали в школе, врали в новостях,.mp3',
-  '/Мне врали в школе, врали в новостях, (1).mp3',
   '/Это не музыка..mp3',
+  '/Если мир — это игра, то где кнопка выход (1).mp3',
   '/Я любил тебя так наивно,.mp3',
+  '/Мне врали в школе, врали в новостях, (1).mp3',
 ]
 
 export default function Home() {
@@ -30,6 +30,7 @@ export default function Home() {
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const fadeIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // Initialize audio element
   useEffect(() => {
@@ -49,6 +50,9 @@ export default function Home() {
         audioRef.current.pause()
         audioRef.current = null
       }
+      if (fadeIntervalRef.current) {
+        clearInterval(fadeIntervalRef.current)
+      }
     }
   }, [])
 
@@ -58,7 +62,11 @@ export default function Home() {
       const wasPlaying = !audioRef.current.paused
       audioRef.current.src = MUSIC_FILES[currentTrackIndex]
       if (wasPlaying) {
-        audioRef.current.play().catch(err => console.error('Error playing audio:', err))
+        audioRef.current.play().then(() => {
+          if (audioRef.current) {
+            fadeIn(audioRef.current)
+          }
+        }).catch(err => console.error('Error playing audio:', err))
       }
     }
   }, [currentTrackIndex])
@@ -88,13 +96,77 @@ export default function Home() {
     }
   }, [isRunning, timeLeft])
 
+  // Fade in audio
+  const fadeIn = (audio: HTMLAudioElement, duration: number = 1000) => {
+    const targetVolume = 0.5
+    const steps = 50
+    const stepDuration = duration / steps
+    const volumeIncrement = targetVolume / steps
+
+    audio.volume = 0
+
+    if (fadeIntervalRef.current) {
+      clearInterval(fadeIntervalRef.current)
+    }
+
+    let currentStep = 0
+    fadeIntervalRef.current = setInterval(() => {
+      currentStep++
+      if (currentStep >= steps || audio.volume >= targetVolume) {
+        audio.volume = targetVolume
+        if (fadeIntervalRef.current) {
+          clearInterval(fadeIntervalRef.current)
+          fadeIntervalRef.current = null
+        }
+      } else {
+        audio.volume = Math.min(targetVolume, audio.volume + volumeIncrement)
+      }
+    }, stepDuration)
+  }
+
+  // Fade out audio
+  const fadeOut = (audio: HTMLAudioElement, duration: number = 1000): Promise<void> => {
+    return new Promise((resolve) => {
+      const startVolume = audio.volume
+      const steps = 50
+      const stepDuration = duration / steps
+      const volumeDecrement = startVolume / steps
+
+      if (fadeIntervalRef.current) {
+        clearInterval(fadeIntervalRef.current)
+      }
+
+      let currentStep = 0
+      fadeIntervalRef.current = setInterval(() => {
+        currentStep++
+        if (currentStep >= steps || audio.volume <= 0) {
+          audio.volume = 0
+          audio.pause()
+          if (fadeIntervalRef.current) {
+            clearInterval(fadeIntervalRef.current)
+            fadeIntervalRef.current = null
+          }
+          resolve()
+        } else {
+          audio.volume = Math.max(0, audio.volume - volumeDecrement)
+        }
+      }, stepDuration)
+    })
+  }
+
   // Control music playback
   useEffect(() => {
     if (audioRef.current) {
       if (isRunning) {
-        audioRef.current.play().catch(err => console.error('Error playing audio:', err))
+        audioRef.current.play().then(() => {
+          if (audioRef.current) {
+            fadeIn(audioRef.current)
+          }
+        }).catch(err => console.error('Error playing audio:', err))
       } else {
-        audioRef.current.pause()
+        if (!audioRef.current.paused) {
+          fadeOut(audioRef.current)
+        }
       }
     }
   }, [isRunning])
@@ -121,6 +193,10 @@ export default function Home() {
       setSelectedTime(time)
       setTimeLeft(time)
     }
+  }
+
+  const handleNextTrack = () => {
+    setCurrentTrackIndex((prev) => (prev + 1) % MUSIC_FILES.length)
   }
 
   const formatTime = (seconds: number): string => {
@@ -212,6 +288,19 @@ export default function Home() {
               </div>
             </div>
           )}
+
+          {/* Next Track Button */}
+          <button
+            onClick={handleNextTrack}
+            className="mt-4 inline-flex items-center gap-2 bg-slate-800/60 backdrop-blur-xl rounded-full px-6 py-3 border border-slate-700/50 shadow-lg hover:bg-slate-700/60 transition-all duration-300 cursor-pointer active:scale-95"
+          >
+            <svg className="w-5 h-5 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+            <span className="text-sm font-semibold text-white/80">
+              Следующий трек
+            </span>
+          </button>
         </div>
       </div>
     </main>
