@@ -209,7 +209,7 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-start pt-6 px-3 bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-950">
+    <main className="min-h-screen flex flex-col items-center justify-start pt-6 px-3 pb-6 bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-950">
       <div className="flex flex-col items-center w-full max-w-2xl">
         {/* Time Selector */}
         <div className="mb-6 w-full px-1">
