@@ -209,14 +209,14 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-950">
-      <div className="flex flex-col items-center">
+    <main className="min-h-screen flex flex-col items-center justify-start pt-6 px-3 bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-950">
+      <div className="flex flex-col items-center w-full max-w-2xl">
         {/* Time Selector */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-center mb-6 text-white/90">
+        <div className="mb-6 w-full px-1">
+          <h1 className="text-2xl font-bold text-center mb-4 text-white/90">
             Квиз Таймер
           </h1>
-          <div className="bg-slate-800/40 backdrop-blur-sm rounded-3xl p-1.5 border border-slate-700/50 shadow-2xl inline-flex">
+          <div className="bg-slate-800/40 backdrop-blur-sm rounded-3xl p-1.5 border border-slate-700/50 shadow-2xl">
             <div className="flex gap-1">
               {TIME_OPTIONS.map((option, index) => (
                 <button
@@ -224,7 +224,7 @@ export default function Home() {
                   onClick={() => handleTimeSelect(option.value)}
                   disabled={isRunning}
                   className={`
-                    relative overflow-hidden py-4 px-6 font-bold text-lg transition-all duration-300
+                    relative overflow-hidden py-3 px-2 font-bold text-lg transition-all duration-300 flex-1 min-w-0
                     ${index === 0 ? 'rounded-l-2xl' : ''}
                     ${index === TIME_OPTIONS.length - 1 ? 'rounded-r-2xl' : ''}
                     ${
@@ -237,8 +237,8 @@ export default function Home() {
                   `}
                 >
                   <div className="flex flex-col items-center gap-0.5">
-                    <span className="text-xl font-black">{option.label}</span>
-                    <span className="text-[10px] uppercase tracking-wider font-semibold opacity-70">{option.unit}</span>
+                    <span className="text-lg font-black">{option.label}</span>
+                    <span className="text-[9px] uppercase tracking-wide font-semibold opacity-70">{option.unit}</span>
                   </div>
                   {selectedTime === option.value && (
                     <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent pointer-events-none rounded-2xl" />
@@ -250,7 +250,7 @@ export default function Home() {
         </div>
 
         {/* Timer Button */}
-        <div className="flex flex-col items-center gap-6">
+        <div className="flex flex-col items-center gap-4">
           <button
             onClick={handleToggle}
             className={`
