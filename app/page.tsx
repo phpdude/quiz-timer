@@ -30,7 +30,7 @@ export default function Home() {
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
-  const fadeIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const fadeAnimationRef = useRef<number | null>(null)
 
   // Initialize audio element
   useEffect(() => {
@@ -50,8 +50,8 @@ export default function Home() {
         audioRef.current.pause()
         audioRef.current = null
       }
-      if (fadeIntervalRef.current) {
-        clearInterval(fadeIntervalRef.current)
+      if (fadeAnimationRef.current) {
+        cancelAnimationFrame(fadeAnimationRef.current)
       }
     }
   }, [])
@@ -96,61 +96,61 @@ export default function Home() {
     }
   }, [isRunning, timeLeft])
 
-  // Fade in audio
+  // Fade in audio using requestAnimationFrame
   const fadeIn = (audio: HTMLAudioElement, duration: number = 1000) => {
     const targetVolume = 0.5
-    const steps = 50
-    const stepDuration = duration / steps
-    const volumeIncrement = targetVolume / steps
+    const startTime = performance.now()
 
     audio.volume = 0
 
-    if (fadeIntervalRef.current) {
-      clearInterval(fadeIntervalRef.current)
+    if (fadeAnimationRef.current) {
+      cancelAnimationFrame(fadeAnimationRef.current)
     }
 
-    let currentStep = 0
-    fadeIntervalRef.current = setInterval(() => {
-      currentStep++
-      if (currentStep >= steps || audio.volume >= targetVolume) {
-        audio.volume = targetVolume
-        if (fadeIntervalRef.current) {
-          clearInterval(fadeIntervalRef.current)
-          fadeIntervalRef.current = null
-        }
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime
+      const progress = Math.min(elapsed / duration, 1)
+
+      audio.volume = progress * targetVolume
+
+      if (progress < 1) {
+        fadeAnimationRef.current = requestAnimationFrame(animate)
       } else {
-        audio.volume = Math.min(targetVolume, audio.volume + volumeIncrement)
+        audio.volume = targetVolume
+        fadeAnimationRef.current = null
       }
-    }, stepDuration)
+    }
+
+    fadeAnimationRef.current = requestAnimationFrame(animate)
   }
 
-  // Fade out audio
+  // Fade out audio using requestAnimationFrame
   const fadeOut = (audio: HTMLAudioElement, duration: number = 1000): Promise<void> => {
     return new Promise((resolve) => {
       const startVolume = audio.volume
-      const steps = 50
-      const stepDuration = duration / steps
-      const volumeDecrement = startVolume / steps
+      const startTime = performance.now()
 
-      if (fadeIntervalRef.current) {
-        clearInterval(fadeIntervalRef.current)
+      if (fadeAnimationRef.current) {
+        cancelAnimationFrame(fadeAnimationRef.current)
       }
 
-      let currentStep = 0
-      fadeIntervalRef.current = setInterval(() => {
-        currentStep++
-        if (currentStep >= steps || audio.volume <= 0) {
+      const animate = (currentTime: number) => {
+        const elapsed = currentTime - startTime
+        const progress = Math.min(elapsed / duration, 1)
+
+        audio.volume = startVolume * (1 - progress)
+
+        if (progress < 1) {
+          fadeAnimationRef.current = requestAnimationFrame(animate)
+        } else {
           audio.volume = 0
           audio.pause()
-          if (fadeIntervalRef.current) {
-            clearInterval(fadeIntervalRef.current)
-            fadeIntervalRef.current = null
-          }
+          fadeAnimationRef.current = null
           resolve()
-        } else {
-          audio.volume = Math.max(0, audio.volume - volumeDecrement)
         }
-      }, stepDuration)
+      }
+
+      fadeAnimationRef.current = requestAnimationFrame(animate)
     })
   }
 
